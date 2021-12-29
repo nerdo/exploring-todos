@@ -1,4 +1,6 @@
 import { BehaviorSubject } from "rxjs";
-import { defaultListItems } from "../defaults";
+import { getCopyOfDefaults } from "../defaults";
+
+const { defaultListItems } = getCopyOfDefaults()
 
 export const listItems$ = new BehaviorSubject([...defaultListItems])

@@ -1,5 +1,5 @@
 import { getNextId } from './getNextId'
-import { IListItem } from "./types"
+import { IListItem } from './types'
 
 export const defaultListItems: IListItem[] = [
   {
@@ -20,3 +20,5 @@ export const defaultListItems: IListItem[] = [
     label: 'Buy bread'
   }
 ]
+
+export const getCopyOfDefaults = () => JSON.parse(JSON.stringify({ defaultListItems }))

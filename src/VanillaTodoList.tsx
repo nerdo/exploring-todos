@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { defaultListItems } from './defaults'
+import { getCopyOfDefaults } from './defaults'
 import { getNextId } from './getNextId'
 import { RenderCounter } from './RenderCounter'
-import { IListItem as ListItemEntry } from "./types"
+import { IListItem as ListItemEntry } from './types'
+
+const { defaultListItems } = getCopyOfDefaults()
 
 interface TextInputProps {
   saveHandler: (label: string) => void

@@ -6,10 +6,12 @@ import { VanillaTodoList } from './VanillaTodoList'
 import { RxjsTodoList } from './RxjsTodoList'
 import { MemoizedTodoList } from './MemoizedTodoList'
 import { PureVanillaTodoList } from './PureVanillaTodoList'
-import { defaultListItems } from './defaults'
+import { getCopyOfDefaults } from './defaults'
 import { ReduxTodoList } from './ReduxTodoList'
 import { Provider } from 'react-redux'
 import { store } from './redux/store'
+
+const { defaultListItems } = getCopyOfDefaults()
 
 const PureVanillaWrapper = () => {
   const [listItems, setListItems] = React.useState(defaultListItems)

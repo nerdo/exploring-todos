@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { defaultListItems } from '../defaults'
+import { getCopyOfDefaults } from '../defaults'
 import { IListItem } from "../types"
+
+const { defaultListItems } = getCopyOfDefaults()
 
 const todoSlice = createSlice({
   name: 'todo',
