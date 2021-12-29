@@ -21,4 +21,8 @@ export const defaultListItems: IListItem[] = [
   }
 ]
 
-export const getCopyOfDefaults = () => JSON.parse(JSON.stringify({ defaultListItems }))
+export interface IDefaults {
+  defaultListItems: IListItem[]
+}
+
+export const getCopyOfDefaults = (): IDefaults => JSON.parse(JSON.stringify({ defaultListItems }))
