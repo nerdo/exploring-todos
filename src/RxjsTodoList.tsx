@@ -1,10 +1,10 @@
-import { FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { BehaviorSubject, map } from 'rxjs'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { getNextId } from './getNextId'
 import { RenderCounter } from './RenderCounter'
+import { IListItem } from './types'
 import { listItems$ } from './rxjs/store'
-import { IListItem } from "./types"
 import { subscribed } from './subscribed'
+import { map } from 'rxjs'
 
 interface TextInputProps {
   saveHandler: (label: string) => void
@@ -65,7 +65,7 @@ interface ListItemProps {
   completed?: IListItem['completed']
   completedHandler: (item: IListItem, completed: boolean) => void
   saveHandler: (item: IListItem) => void
-  deleteHandler: (item: IListItem) => void
+  deleteHandler: (itemId: IListItem['id']) => void
 }
 const ListItem = memo(
   ({ id, label, completed, completedHandler, saveHandler, deleteHandler }: ListItemProps) => {
@@ -79,21 +79,20 @@ const ListItem = memo(
         toggleCompleted()
       }
     }
-    const deleteListItem = useCallback(
-      (e?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        deleteHandler(item)
-      },
-      [deleteHandler]
-    )
-    const startEditing = useCallback((e?: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    const deleteListItem = () => {
+      deleteHandler(item.id)
+    }
+    const startEditing = () => {
       if (item.completed) return
       setIsEditing(true)
-    }, [])
-    const endEditing = (newLabel: string) => {
-      setIsEditing(false)
-      console.log('endEditing', newLabel)
-      saveHandler({ ...item, label: newLabel })
     }
+    const endEditing = useCallback(
+      (newLabel: string) => {
+        setIsEditing(false)
+        saveHandler({ ...item, label: newLabel })
+      },
+      [item]
+    )
 
     const bgColor = item.completed ? 'bg-slate-900' : 'bg-slate-700'
     const textColor = item.completed ? 'text-slate-600' : 'text-slate-400'
@@ -138,64 +137,39 @@ const ListItem = memo(
         >
           &times;
         </button>
-        <RenderCounter id={item.id} />
+        <RenderCounter />
       </div>
     )
   }
 )
 
-interface TodoListProps {
+interface RxjsTodoListProps {
   listItems: IListItem[]
-  setListItems: (listItems: IListItem[]) => void
+  addItems: (...items: IListItem[]) => void
+  editItems: (...items: IListItem[]) => void
+  deleteItems: (...itemIds: IListItem['id'][]) => void
 }
-const TodoList: FC<TodoListProps> = ({ listItems, setListItems }: TodoListProps) => {
+export const PureTodoList = ({
+  listItems,
+  addItems,
+  editItems,
+  deleteItems
+}: RxjsTodoListProps) => {
   const [counter, setCounter] = useState(0)
   const saveNewListItem = (label: string) => {
-    setListItems([...listItems, { id: getNextId(), label }])
+    addItems({ id: getNextId(), label })
   }
-  const saveExistingListItem = useCallback(
-    (item: IListItem) => {
-      const index = listItems.findIndex((i) => i.id === item.id)
-      const newListItems = [...listItems]
-      newListItems[index] = { ...item }
-      console.log('saveExistingListItem', index, item, newListItems)
-      setListItems(newListItems)
-    },
-    [listItems]
-  )
+  const saveExistingListItem = editItems
   const completedHandler = useCallback(
     (item: IListItem, completed: boolean) => {
-      const index = listItems.findIndex((i) => i.id === item.id)
-      const newListItems = [...listItems]
-      newListItems[index] = { ...item, completed: item.completed }
-      setListItems(newListItems)
+      editItems({ ...item, completed })
     },
-    [listItems]
+    [editItems]
   )
-  const deleteHandler = useCallback(
-    (item: IListItem) => {
-      const index = listItems.findIndex((i) => i.id === item.id)
-      const newListItems = [...listItems]
-      newListItems.splice(index, 1)
-      setListItems(newListItems)
-    },
-    [listItems]
-  )
-  const subscribedListItems = useMemo(
-    () =>
-      listItems.map((item: IListItem) =>
-        subscribed<IListItem, ListItemProps>(
-          new BehaviorSubject(item),
-          { id: item.id, label: item.label, completed: item.completed },
-          { props: { completedHandler, saveHandler: saveExistingListItem, deleteHandler } }
-        )(ListItem)
-      ),
-    [listItems?.length || 0]
-  )
-
+  const deleteHandler = deleteItems
   return (
     <div className='container mx-auto gap-y-3 flex flex-col items-center'>
-      <h2>RxJS</h2>
+      <h2>Rxjs</h2>
       <button
         className='p-2 bg-blue-300 text-black rounded-md'
         onClick={() => setCounter(counter + 1)}
@@ -203,9 +177,15 @@ const TodoList: FC<TodoListProps> = ({ listItems, setListItems }: TodoListProps)
         Re-Render Component ({counter})
       </button>
       <div className='p-5 w-72 max-w-xs flex flex-col bg-slate-800 shadow-lg rounded-xl'>
-        {subscribedListItems &&
-          subscribedListItems.map((SubscribedListItem, index) => (
-            <SubscribedListItem key={index} />
+        {listItems &&
+          listItems.map((item) => (
+            <ListItem
+              key={item.id}
+              {...item}
+              saveHandler={saveExistingListItem}
+              completedHandler={completedHandler}
+              deleteHandler={deleteHandler}
+            />
           ))}
       </div>
       <RenderCounter />
@@ -214,16 +194,26 @@ const TodoList: FC<TodoListProps> = ({ listItems, setListItems }: TodoListProps)
   )
 }
 
-export const RxjsTodoList = subscribed<{ listItems: IListItem[] }, TodoListProps>(
+export const RxjsTodoList = subscribed<{ listItems: IListItem[] }, RxjsTodoListProps>(
   listItems$.pipe(map((listItems) => ({ listItems }))),
   { listItems: listItems$.value },
   {
     props: {
-      setListItems: (listItems: IListItem[]) => {
-        listItems$.next(listItems)
+      addItems: (...items: IListItem[]) => {
+        listItems$.next(listItems$.value.concat(items))
+      },
+      editItems: (...newItems: IListItem[]) => {
+        const items = [...listItems$.value]
+        newItems
+          .map((item) => ({ index: items.findIndex((i) => i.id === item.id), item }))
+          .forEach(({ index, item }) => (items[index] = item))
+          listItems$.next(items)
+      },
+      deleteItems: (...itemIds) => {
+        listItems$.next(listItems$.value.filter((item) => !itemIds.includes(item.id)))
       }
     }
   }
-)(TodoList)
+)(PureTodoList)
 
 export default RxjsTodoList
