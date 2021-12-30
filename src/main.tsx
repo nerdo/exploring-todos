@@ -24,14 +24,14 @@ const MemoizedWrapper = () => {
 }
 
 const routes = [
-  { to: '/vanilla', label: 'Vanilla', element: <VanillaTodoList /> },
-  { to: '/pure-vanilla', label: 'Pure Vanilla', element: <PureVanillaWrapper /> },
-  { to: '/memoized', label: 'Memoized', element: <MemoizedWrapper /> },
-  { to: '/rxjs', label: 'RxJS', element: <RxjsTodoList /> },
+  { to: '/vanilla', label: 'Vanilla', render: () => <VanillaTodoList /> },
+  { to: '/pure-vanilla', label: 'Pure Vanilla', render: () => <PureVanillaWrapper /> },
+  { to: '/memoized', label: 'Memoized', render: () => <MemoizedWrapper /> },
+  { to: '/rxjs', label: 'RxJS', render: () => <RxjsTodoList /> },
   {
     to: '/redux',
     label: 'Redux',
-    element: (
+    render: () => (
       <Provider store={store}>
         <ReduxTodoList />
       </Provider>
@@ -59,7 +59,7 @@ ReactDOM.render(
           <Routes>
             {routes &&
               routes.map((route) => (
-                <Route key={route.to} path={route.to} element={route.element} />
+                <Route key={route.to} path={route.to} element={route.render()} />
               ))}
           </Routes>
         </main>

@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { getNextId } from './getNextId'
 import { RenderCounter } from './RenderCounter'
-import { IListItem as ListItemEntry } from "./types"
+import { IListItem, IListItem as ListItemEntry } from "./types"
 
 interface TextInputProps {
   saveHandler: (label: string) => void
@@ -145,6 +145,23 @@ const ListItem = ({
   )
 }
 
+interface PureTodoListCounterProps {
+  listItems: IListItem[]
+}
+
+export const PureTodoListCounter = ({ listItems }: PureTodoListCounterProps) => {
+  return (
+    <>
+      {listItems && (
+        <div>
+          Completed / Total = {listItems.filter((item) => !!item.completed).length} /{' '}
+          {listItems.length}
+        </div>
+      )}
+    </>
+  )
+}
+
 interface PureVanillaTodoListProps {
   listItems: ListItemEntry[]
   setListItems: (newItems: ListItemEntry[]) => void
@@ -206,8 +223,11 @@ export const PureVanillaTodoList = ({ listItems, setListItems }: PureVanillaTodo
             />
           ))}
       </div>
-      <RenderCounter />
+      <PureTodoListCounter listItems={listItems} />
       <TextInput saveHandler={saveNewListItem} placeholder='add list item here' />
+      <div>
+        Render Count: <RenderCounter />
+      </div>
     </div>
   )
 }

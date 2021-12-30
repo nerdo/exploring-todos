@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { getCopyOfDefaults } from './defaults'
 import { getNextId } from './getNextId'
 import { RenderCounter } from './RenderCounter'
-import { IListItem as ListItemEntry } from './types'
+import { IListItem } from './types'
 
 const { defaultListItems } = getCopyOfDefaults()
 
@@ -135,6 +135,23 @@ const ListItem = ({ item, completedHandler, saveHandler, deleteHandler }: ListIt
   )
 }
 
+interface PureTodoListCounterProps {
+  listItems: IListItem[]
+}
+
+export const PureTodoListCounter = ({ listItems }: PureTodoListCounterProps) => {
+  return (
+    <>
+      {listItems && (
+        <div>
+          Completed / Total = {listItems.filter((item) => !!item.completed).length} /{' '}
+          {listItems.length}
+        </div>
+      )}
+    </>
+  )
+}
+
 export const VanillaTodoList = () => {
   const [counter, setCounter] = useState(0)
   const [listItems, setListItems] = useState(defaultListItems)
@@ -151,7 +168,12 @@ export const VanillaTodoList = () => {
   return (
     <div className='container mx-auto gap-y-3 flex flex-col items-center'>
       <h2>Vanilla</h2>
-      <button className='p-2 bg-blue-300 text-black rounded-md' onClick={() => setCounter(counter + 1)}>Re-Render Component ({counter})</button>
+      <button
+        className='p-2 bg-blue-300 text-black rounded-md'
+        onClick={() => setCounter(counter + 1)}
+      >
+        Re-Render Component ({counter})
+      </button>
       <div className='p-5 w-72 max-w-xs flex flex-col bg-slate-800 shadow-lg rounded-xl'>
         {listItems &&
           listItems.map((item, index) => (
@@ -172,8 +194,11 @@ export const VanillaTodoList = () => {
             />
           ))}
       </div>
-      <RenderCounter />
+      <PureTodoListCounter listItems={listItems} />
       <TextInput saveHandler={saveNewListItem} placeholder='add list item here' />
+      <div>
+        Render Count: <RenderCounter />
+      </div>
     </div>
   )
 }

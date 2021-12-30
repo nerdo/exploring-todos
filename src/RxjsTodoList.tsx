@@ -143,6 +143,23 @@ const ListItem = memo(
   }
 )
 
+interface PureTodoListCounterProps {
+  listItems: IListItem[]
+}
+
+export const PureTodoListCounter = ({ listItems }: PureTodoListCounterProps) => {
+  return (
+    <>
+      {listItems && (
+        <div>
+          Completed / Total = {listItems.filter((item) => !!item.completed).length} /{' '}
+          {listItems.length}
+        </div>
+      )}
+    </>
+  )
+}
+
 interface RxjsTodoListProps {
   listItems: IListItem[]
   addItems: (...items: IListItem[]) => void
@@ -188,8 +205,11 @@ export const PureTodoList = ({
             />
           ))}
       </div>
-      <RenderCounter />
+      <PureTodoListCounter listItems={listItems} />
       <TextInput saveHandler={saveNewListItem} placeholder='add list item here' />
+      <div>
+        Render Count: <RenderCounter />
+      </div>
     </div>
   )
 }
