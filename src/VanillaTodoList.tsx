@@ -60,9 +60,9 @@ const TextInput = ({
 }
 
 interface ListItemProps {
-  item: ListItemEntry
+  item: IListItem
   completedHandler: (completed: boolean) => void
-  saveHandler: (item: ListItemEntry) => void
+  saveHandler: (item: IListItem) => void
   deleteHandler: () => void
 }
 const ListItem = ({ item, completedHandler, saveHandler, deleteHandler }: ListItemProps) => {
@@ -158,7 +158,7 @@ export const VanillaTodoList = () => {
   const saveNewListItem = (label: string) => {
     setListItems([...listItems, { id: getNextId(), label }])
   }
-  const saveExistingListItem = (item: ListItemEntry) => {
+  const saveExistingListItem = (item: IListItem) => {
     const index = listItems.findIndex((i) => i.id === item.id)
     const newListItems = [...listItems]
     newListItems[index] = { ...item }
